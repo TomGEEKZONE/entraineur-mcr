@@ -1,0 +1,83 @@
+name: Publier l'Entraîneur MCR
+
+on:
+
+  push:
+
+    branches: [main]
+
+  workflow_dispatch:
+
+permissions:
+
+  contents: read
+
+  pages: write
+
+  id-token: write
+
+concurrency:
+
+  group: pages
+
+  cancel-in-progress: false
+
+jobs:
+
+  deploy:
+
+    runs-on: ubuntu-latest
+
+    environment:
+
+      name: github-pages
+
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+
+      - name: Recuperer les fichiers
+
+        uses: actions/checkout@v4
+
+      - name: Decompresser les deux archives
+
+        run: |
+
+          mkdir -p site
+
+          unzip -q Entraineur_MCR_V053_Application_Partie_1.zip -d site
+
+          unzip -q Entraineur_MCR_V053_Ressources_Partie_2.zip -d site
+
+      - name: Verifier les fichiers
+
+        run: |
+
+          test -f site/index.html
+
+          test -f site/app.js
+
+          test -f site/ressources/Fiche_MCR_81_combinaisons.pdf
+
+          test -f site/ressources/La_Baie_de_Jade_Memo_01_Tuiles_et_Figures.pdf
+
+          test -f site/ressources/La_Baie_de_Jade_Memo_02_Combinaisons.pdf
+
+      - name: Configurer GitHub Pages
+
+        uses: actions/configure-pages@v5
+
+      - name: Preparer la publication
+
+        uses: actions/upload-pages-artifact@v4
+
+        with:
+
+          path: site
+
+      - name: Publier le site
+
+        id: deployment
+
+        uses: actions/deploy-pages@v4
